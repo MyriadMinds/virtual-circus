@@ -5,7 +5,7 @@ use log::{error, info};
 use nalgebra_glm as glm;
 use num_traits::{AsPrimitive, FromPrimitive};
 
-use std::any::{Any, TypeId};
+use std::any::Any;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -21,7 +21,7 @@ enum DataType {
 pub struct GLTFConverter {
   document: gltf::Document,
   buffers: Vec<gltf::buffer::Data>,
-  images: Vec<gltf::image::Data>,
+  _images: Vec<gltf::image::Data>,
   file_name: String,
   output_dir: String,
   models: Vec<ast::Model>,
@@ -45,7 +45,7 @@ impl Converter for GLTFConverter {
     let mut converter = Self {
       document,
       buffers,
-      images,
+      _images: images,
       file_name,
       output_dir: output_dir.to_owned(),
       models: Vec::new(),
@@ -206,11 +206,11 @@ impl GLTFConverter {
       }
     }
 
-    if accessor.normalized() {
-      for mut element in base_components.iter_mut() {
-        renormalize(&mut element, &data_type);
-      }
-    }
+    // if accessor.normalized() {
+    //   for mut element in base_components.iter_mut() {
+    //     renormalize(&mut element, &data_type);
+    //   }
+    // }
 
     Ok(base_components)
   }
@@ -486,18 +486,18 @@ fn convert_indices_from_fan(indices: Vec<u32>) -> Vec<u32> {
   new_indices
 }
 
-fn renormalize<T>(value: &mut T, data_type: &DataType) {
-  match data_type {
-    DataType::I8 => {
-      if TypeId::of::<T>() == TypeId::of::<i8>() {
-        return;
-      }
-    }
+// fn renormalize<T>(value: &mut T, data_type: &DataType) {
+//   match data_type {
+//     DataType::I8 => {
+//       if TypeId::of::<T>() == TypeId::of::<i8>() {
+//         return;
+//       }
+//     }
 
-    DataType::U8 => todo!(),
-    DataType::I16 => todo!(),
-    DataType::U16 => todo!(),
-    DataType::U32 => todo!(),
-    DataType::F32 => todo!(),
-  }
-}
+//     DataType::U8 => todo!(),
+//     DataType::I16 => todo!(),
+//     DataType::U16 => todo!(),
+//     DataType::U32 => todo!(),
+//     DataType::F32 => todo!(),
+//   }
+// }

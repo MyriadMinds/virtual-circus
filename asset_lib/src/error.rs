@@ -6,6 +6,8 @@ pub(crate) type Result<T> = std::result::Result<T, AssetError>;
 pub enum AssetError {
   #[error("file error: {0}")]
   FileError(#[from] std::io::Error),
+  #[error("archive error: {0}")]
+  ArchiveError(#[from] zip::result::ZipError),
   #[error("failed to process asset raw data: {0}")]
   DataError(#[from] bincode::Error),
   #[error("failed to process asset json: [0]")]

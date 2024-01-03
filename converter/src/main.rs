@@ -45,7 +45,7 @@ fn main() -> ExitCode {
 fn initialize_logging() {
   let mut config_file = std::env::current_exe().unwrap();
   config_file.pop();
-  config_file.push("config/log4rs.yaml");
+  config_file.push("config/converter_log4rs.yaml");
 
   if !config_file.is_file() {
     println!("Couldn't find a log config file, initializing default console logger.");
