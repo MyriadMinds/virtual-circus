@@ -1,0 +1,13 @@
+pub(crate) const APP_NAME: &std::ffi::CStr = unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"Virtual Circus\0") };
+pub(crate) const APP_VERSION: u32 = ash::vk::make_api_version(0, 0, 1, 0);
+pub(crate) const ENGINE_NAME: &std::ffi::CStr = unsafe { std::ffi::CStr::from_bytes_with_nul_unchecked(b"Virtual Circus\0") };
+pub(crate) const ENGINE_VERSION: u32 = ash::vk::make_api_version(0, 0, 1, 0);
+pub(crate) const API_VERSION: u32 = ash::vk::make_api_version(0, 1, 3, 255);
+pub(crate) const WINDOW_WIDTH: u32 = 1600;
+pub(crate) const WINDOW_HEIGHT: u32 = 900;
+pub(crate) const MAX_FRAMES_IN_FLIGHT: u32 = 2;
+pub(crate) const DESIRED_SWAPCHAIN_IMAGES: u32 = 3;
+pub(crate) const DEPTH_FORMAT: ash::vk::Format = ash::vk::Format::D32_SFLOAT;
+pub(crate) const DESCRIPTOR_SET_COUNT: usize = 2;
+pub(crate) const GLOBAL_DESCRIPTOR_BINDING: usize = 0;
+pub(crate) const MATERIAL_DESCRIPTOR_BINDING: usize = 1;

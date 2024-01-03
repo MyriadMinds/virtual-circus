@@ -1,0 +1,29 @@
+[package]
+name = "converter"
+version = "0.1.0"
+edition = "2021"
+description = "A converter for asset files to be used in Virtual Circus"
+
+[dependencies]
+asset_lib = { path = "../asset_lib" }
+thiserror = "1.0.43"
+gltf = "1.3.0"
+log = "0.4.17"
+num-traits = "^0.2"
+
+[dependencies.nalgebra-glm]
+version = "0.18.0"
+features = ["serde-serialize"]
+
+[dependencies.clap]
+version = "4.4.8"
+features = ["derive"]
+
+[dependencies.log4rs]
+version = "1.2.0"
+features = [
+  "rolling_file_appender",
+  "compound_policy",
+  "delete_roller",
+  "size_trigger",
+]
