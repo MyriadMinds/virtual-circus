@@ -8,16 +8,17 @@ const SCENE_VERSION: u32 = 1;
 #[derive(Serialize, Deserialize, Default)]
 pub struct Scene {
   pub name: String,
-  models: Vec<String>,
+  models: Vec<u128>,
   nodes: Vec<Node>,
   parent_nodes: Vec<usize>,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct Node {
+  pub name: String,
   pub transform: glm::Mat4,
   pub childrem: Vec<usize>,
-  pub models: Vec<usize>,
+  pub model: usize,
 }
 
 impl Scene {
@@ -34,8 +35,8 @@ impl Scene {
     Ok(scene)
   }
 
-  pub fn insert_model(&mut self, model_name: &str) -> usize {
-    self.models.push(model_name.to_owned());
+  pub fn insert_model(&mut self, model_id: u128) -> usize {
+    self.models.push(model_id);
     self.models.len() - 1
   }
 
@@ -48,7 +49,7 @@ impl Scene {
     self.parent_nodes.push(node);
   }
 
-  pub fn models(&self) -> &[String] {
+  pub fn models(&self) -> &[u128] {
     self.models.as_ref()
   }
 

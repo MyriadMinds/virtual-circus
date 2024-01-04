@@ -6,7 +6,9 @@ use nalgebra_glm as glm;
 use num_traits::{AsPrimitive, FromPrimitive};
 
 use std::any::Any;
+use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
 use std::path::PathBuf;
 
 enum DataType {
@@ -85,6 +87,8 @@ impl GLTFConverter {
       let (vertices, indices) = self.parse_primitive(&primitive)?;
       model.add_mesh(vertices, indices)?;
     }
+
+    model.id = hash_model(&model);
 
     Ok(model)
   }
@@ -251,11 +255,14 @@ impl GLTFConverter {
     let mut parsed_node = ast::Node::default();
 
     parsed_node.transform = glm::Mat4::from(node.transform().matrix());
+    parsed_node.name = "Node".to_owned();
 
     if let Some(mesh) = node.mesh() {
       let model_name = self.models.get(mesh.index()).ok_or(ConverterError::MissingResource)?.name.clone();
-      let index = scene.insert_model(&model_name);
-      parsed_node.models.push(index);
+      let model_id = self.models.get(mesh.index()).ok_or(ConverterError::MissingResource)?.id.clone();
+      let index = scene.insert_model(model_id);
+      parsed_node.model = index;
+      parsed_node.name = model_name;
     };
 
     for node in children {
@@ -508,3 +515,9 @@ fn convert_indices_from_fan(indices: Vec<u32>) -> Vec<u32> {
 //     DataType::F32 => todo!(),
 //   }
 // }
+
+fn hash_model(model: &ast::Model) -> u128 {
+  let mut hasher = DefaultHasher::new();
+  model.hash(&mut hasher);
+  hasher.finish() as u128
+}

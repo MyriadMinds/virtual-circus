@@ -7,9 +7,10 @@ use std::hash::{Hash, Hasher};
 
 const MODEL_VERSION: u32 = 1;
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Hash)]
 pub struct Model {
   pub name: String,
+  pub id: u128,
   meshes: Vec<Mesh>,
 
   #[serde(skip)]
@@ -17,9 +18,10 @@ pub struct Model {
 }
 
 impl Model {
-  pub fn new(name: &str) -> Self {
+  pub fn new(name: &str, id: u128) -> Self {
     Self {
       name: name.to_owned(),
+      id,
       ..Default::default()
     }
   }
@@ -77,7 +79,7 @@ impl Asset for Model {
   }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Hash)]
 pub struct Mesh {
   pub vertex_count: u32,  // amount if vertices in the mesh
   pub vertex_offset: u32, // offset into the buffer where the vertices begin
