@@ -79,8 +79,7 @@ impl GLTFConverter {
     let mut model = ast::Model::default();
 
     let index = mesh.index();
-    let file_name = &self.file_name;
-    model.name = mesh.name().map(|name| name.to_owned()).unwrap_or(format!("{file_name}-Model_{index}"));
+    model.name = mesh.name().map(|name| name.to_owned()).unwrap_or(format!("Model_{index}"));
 
     for primitive in mesh.primitives() {
       let (vertices, indices) = self.parse_primitive(&primitive)?;
@@ -234,11 +233,8 @@ impl GLTFConverter {
   fn parse_scene(&self, scene: &gltf::Scene) -> Result<ast::Scene> {
     let mut parsed_scene = ast::Scene::default();
 
-    if let Some(name) = scene.name() {
-      parsed_scene.name = name.to_owned();
-    } else {
-      parsed_scene.name = "Scene_".to_owned() + &scene.index().to_string();
-    }
+    let index = scene.index();
+    parsed_scene.name = scene.name().map(|name| name.to_string()).unwrap_or(format!("Scene_{index}"));
 
     let nodes = scene.nodes();
     for node in nodes {
@@ -274,26 +270,37 @@ impl GLTFConverter {
   fn write_files(mut self) {
     let output_dir = self.output_dir;
     let file_name = self.file_name;
+    let archive_name = format!("{output_dir}/{file_name}.ast");
+    let mut archive = match ast::AssetArchiveWriter::new(&archive_name) {
+      Ok(archive) => {
+        info!("Created assed archive: {}", archive_name);
+        archive
+      }
+      Err(e) => {
+        error!("Failed to create asset archive for gltf file: {}", e);
+        return;
+      }
+    };
 
     for model in self.models.drain(..) {
-      let model_name = &model.name;
-      let output_file = format!("{output_dir}/{file_name}-{model_name}.mesh");
-      info!("Saving gltf model {}", file_name);
-      save_asset(model, &output_file);
+      let model_name = model.name.to_owned();
+      info!("Adding gltf model to archive: {}", model_name);
+      save_asset(model, &model_name, &mut archive);
     }
 
     for scene in self.scenes.drain(..) {
-      let scene_name = &scene.name;
-      let output_file = format!("{output_dir}/{file_name}-{scene_name}.scn");
-      info!("Saving gltf scene {}", file_name);
-      save_asset(scene, &output_file);
+      let scene_name = scene.name.to_owned();
+      info!("Adding gltf scene to archive: {}", scene_name);
+      save_asset(scene, &scene_name, &mut archive);
     }
+
+    archive.finish().unwrap();
   }
 }
 
 //----------------------------Helpers--------------------------------------
 
-fn save_asset(asset: impl ast::Asset, output_file: &str) {
+fn save_asset(asset: impl ast::Asset, asset_name: &str, archive: &mut ast::AssetArchiveWriter) {
   let asset = match asset.convert_to_asset() {
     Ok(asset) => asset,
     Err(e) => {
@@ -302,9 +309,9 @@ fn save_asset(asset: impl ast::Asset, output_file: &str) {
     }
   };
 
-  match asset.save_to_file(output_file) {
+  match archive.add_asset_file(asset, asset_name) {
     Ok(_) => (),
-    Err(e) => error!("Failed to save asset file: {}", e),
+    Err(e) => error!("Failed to save asset to archive: {}", e),
   }
 }
 

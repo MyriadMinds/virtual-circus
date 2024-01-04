@@ -24,9 +24,7 @@ impl Model {
     }
   }
 
-  pub fn load_model(path: &str) -> Result<Self> {
-    let asset = AssetFile::load_from_file(path)?;
-
+  pub fn load_model(asset: AssetFile) -> Result<Self> {
     if asset.asset_type != AssetType::Model {
       return Err(AssetError::IncorrectType("Model", asset.asset_type.name()));
     }

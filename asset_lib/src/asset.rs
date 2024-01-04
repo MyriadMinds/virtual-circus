@@ -69,7 +69,8 @@ impl AssetArchiveWriter {
   }
 
   pub fn add_asset_file(&mut self, asset_file: AssetFile, filename: &str) -> Result<()> {
-    self.zip_writer.start_file(filename, zip::write::FileOptions::default())?;
+    let options = zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
+    self.zip_writer.start_file(filename, options)?;
     asset_file.save_to_writer(&mut self.zip_writer)?;
     Ok(())
   }

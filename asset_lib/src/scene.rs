@@ -21,9 +21,7 @@ pub struct Node {
 }
 
 impl Scene {
-  pub fn load_scene(path: &str) -> Result<Self> {
-    let asset = AssetFile::load_from_file(path)?;
-
+  pub fn load_scene(asset: AssetFile) -> Result<Self> {
     if asset.asset_type != AssetType::Scene {
       return Err(AssetError::IncorrectType("Scene", asset.asset_type.name()));
     }
