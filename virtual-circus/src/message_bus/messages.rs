@@ -1,4 +1,4 @@
-use crate::framework::GltfModel;
+use crate::framework::Model;
 use crate::vulkan::WindowResources;
 
 use log::debug;
@@ -8,9 +8,10 @@ use std::sync::{Arc, Mutex};
 pub(crate) enum Message {
   Stop,
   RequestWindowResources,
-  RequestModel(String),
+  RequestAsset(String),
   WindowResourcesReady(MessageData<WindowResources>),
-  ModelReady(MessageData<GltfModel>),
+  ModelReady(MessageData<Model>),
+  SceneReady(MessageData<asset_lib::Scene>),
 }
 
 impl Message {
@@ -18,9 +19,10 @@ impl Message {
     match self {
       Message::Stop => debug!("Message: Stop"),
       Message::RequestWindowResources => debug!("Message: RequestWindowResources"),
-      Message::RequestModel(path) => debug!("Message: RequestModel {}", path),
+      Message::RequestAsset(path) => debug!("Message: RequestAsset {}", path),
       Message::WindowResourcesReady(_) => debug!("Message: WindowResourcesReady"),
       Message::ModelReady(_) => debug!("Message: ModelReady"),
+      Message::SceneReady(_) => debug!("Message: SceneReady"),
     }
   }
 }

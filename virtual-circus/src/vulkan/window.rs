@@ -87,7 +87,7 @@ impl Window {
     })
   }
 
-  pub(crate) unsafe fn record_commands(&self, command_buffer: &vk::CommandBuffer, image_index: usize, models: &[impl Model]) -> Result<()> {
+  pub(crate) unsafe fn record_commands(&self, command_buffer: &vk::CommandBuffer, image_index: usize, models: &[Model]) -> Result<()> {
     trace!("Recording command buffer: {:?}", command_buffer);
     let begin_info = vk::CommandBufferBeginInfo::default();
 
@@ -219,7 +219,7 @@ impl Window {
     }
   }
 
-  pub(crate) fn draw_frame(&mut self, models: &[impl Model]) -> Result<()> {
+  pub(crate) fn draw_frame(&mut self, models: &[Model]) -> Result<()> {
     unsafe {
       trace!("Drawing frame: {}", self.frame_index);
       let device = &self.device;

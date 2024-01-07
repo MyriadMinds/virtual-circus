@@ -21,18 +21,8 @@ pub(crate) enum EngineError {
   VulkanError(#[from] ash::vk::Result),
   #[error("failed to create allocator: {0}")]
   AllocatorError(#[from] gpu_allocator::AllocationError),
-  #[error("failed to open model file: {0}")]
-  ModelError(#[from] ModelError),
-}
-
-#[derive(Error, Debug)]
-pub(crate) enum ModelError {
-  #[error("failed to load the gltf model file {0}")]
-  GltfError(#[from] gltf::Error),
-  #[error("failed to access resource: {0}")]
-  NoResource(&'static str),
-  #[error("field has an invalid value: {0}")]
-  InvalidField(&'static str),
+  #[error("failed to process asset file: {0}")]
+  AssetError(#[from] asset_lib::AssetError),
 }
 //---------------------------Macros------------------------
 

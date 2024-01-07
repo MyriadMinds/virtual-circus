@@ -1,4 +1,4 @@
-use crate::framework::GltfModel;
+use crate::framework::Model;
 use crate::message_bus::{Message, MessageBox};
 use crate::utils::thread::Threaded;
 use crate::utils::tools::{EngineError, Result};
@@ -7,7 +7,7 @@ use crate::vulkan::{Vulkan, WindowResources};
 use crate::error;
 
 pub(crate) struct Renderer {
-  models: Vec<GltfModel>,
+  models: Vec<Model>,
   vulkan: Vulkan,
   message_box: MessageBox,
 }
@@ -48,7 +48,7 @@ impl Threaded for Renderer {
   fn run(&mut self) {
     self.message_box.post_message(Message::RequestWindowResources);
     // self.message_box.post_message(Message::RequestModel("models/Sword-01.glb".to_owned()));
-    self.message_box.post_message(Message::RequestModel("models/Vita.vrm".to_owned()));
+    self.message_box.post_message(Message::RequestAsset("models/Vita.ast".to_owned()));
 
     let resources = self.wait_for_window_resources();
 

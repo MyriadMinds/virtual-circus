@@ -11,7 +11,7 @@ const MODEL_VERSION: u32 = 1;
 pub struct Model {
   pub name: String,
   pub id: u128,
-  meshes: Vec<Mesh>,
+  pub meshes: Vec<Mesh>,
 
   #[serde(skip)]
   pub blob: Vec<u8>,
@@ -60,10 +60,6 @@ impl Model {
     };
     self.meshes.push(mesh);
     Ok(())
-  }
-
-  pub fn meshes(&self) -> &[Mesh] {
-    self.meshes.as_ref()
   }
 }
 

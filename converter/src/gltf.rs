@@ -280,7 +280,7 @@ impl GLTFConverter {
     let archive_name = format!("{output_dir}/{file_name}.ast");
     let mut archive = match ast::AssetArchiveWriter::new(&archive_name) {
       Ok(archive) => {
-        info!("Created assed archive: {}", archive_name);
+        info!("Created asset archive: {}", archive_name);
         archive
       }
       Err(e) => {
@@ -291,12 +291,14 @@ impl GLTFConverter {
 
     for model in self.models.drain(..) {
       let model_name = model.name.to_owned();
+      let model_name = format!("{model_name}.mesh");
       info!("Adding gltf model to archive: {}", model_name);
       save_asset(model, &model_name, &mut archive);
     }
 
     for scene in self.scenes.drain(..) {
       let scene_name = scene.name.to_owned();
+      let scene_name = format!("{scene_name}.scn");
       info!("Adding gltf scene to archive: {}", scene_name);
       save_asset(scene, &scene_name, &mut archive);
     }

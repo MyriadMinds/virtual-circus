@@ -1,3 +1,3 @@
 pub(crate) mod model;
 
-pub(crate) use model::{GltfModel, Model};
+pub(crate) use model::Model;

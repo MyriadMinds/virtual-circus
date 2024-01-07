@@ -1,8 +1,10 @@
 mod asset_manager;
 mod renderer;
+mod scene_manager;
 
 pub(crate) use asset_manager::AssetManager;
 pub(crate) use renderer::Renderer;
+pub(crate) use scene_manager::SceneManager;
 
 use crate::utils::thread::{Thread, Threaded};
 

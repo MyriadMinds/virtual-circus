@@ -46,13 +46,19 @@ impl AssetFile {
   }
 
   fn save_to_writer<W: std::io::Write>(self, writer: &mut W) -> Result<()> {
+    let writer = std::io::BufWriter::new(writer);
     bincode::serialize_into(writer, &self)?;
     Ok(())
   }
 
   fn read_from_reader<R: std::io::Read>(reader: R) -> Result<Self> {
+    let reader = std::io::BufReader::new(reader);
     let asset: AssetFile = bincode::deserialize_from(reader)?;
     Ok(asset)
+  }
+
+  pub fn asset_type(&self) -> AssetType {
+    self.asset_type
   }
 }
 

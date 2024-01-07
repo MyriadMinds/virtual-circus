@@ -1,4 +1,4 @@
-use crate::framework::model::GltfModel;
+use crate::framework::Model;
 use crate::message_bus::{Message, MessageBox, MessageData};
 use crate::utils::constants::*;
 use crate::utils::thread::Threaded;
@@ -9,7 +9,9 @@ use crate::vulkan::WindowResources;
 use crate::vulkan::{Allocator, Vulkan};
 
 use ash::vk;
+use asset_lib as ast;
 
+use ast::AssetFile;
 use log::error;
 use std::sync::mpsc::TryRecvError;
 use std::sync::Arc;
@@ -19,6 +21,12 @@ pub(crate) struct AssetManager {
   allocator: Allocator,
   global_descriptor_set_layout: Arc<GlobalDescriptorSetLayout>,
   material_descriptor_set_layout: Arc<MaterialDescriptorSetLayout>,
+}
+
+#[derive(Default)]
+struct AssetGroup {
+  models: Vec<ast::Model>,
+  scenes: Vec<ast::Scene>,
 }
 
 impl AssetManager {
@@ -35,12 +43,35 @@ impl AssetManager {
     })
   }
 
-  fn prepare_model(&mut self, path: String) {
-    let model = GltfModel::new(&path, &mut self.allocator, &self.material_descriptor_set_layout).unwrap();
-    let model = MessageData::new(model);
+  fn load_assets(&mut self, path: String) {
+    let mut asset_group = match parse_asset_file(&path) {
+      Ok(asset_group) => asset_group,
+      Err(e) => {
+        error!("Failed to parse assets: {}", e);
+        return;
+      }
+    };
 
+    let models = match asset_group.convert_models(&mut self.allocator) {
+      Ok(models) => models,
+      Err(e) => {
+        error!("Failed to convert model assets: {}", e);
+        return;
+      }
+    };
     self.allocator.flush();
-    self.message_box.post_message(Message::ModelReady(model));
+
+    let scenes = asset_group.scenes.drain(..);
+
+    for model in models {
+      let message = MessageData::new(model);
+      self.message_box.post_message(Message::ModelReady(message));
+    }
+
+    for scene in scenes {
+      let message = MessageData::new(scene);
+      self.message_box.post_message(Message::SceneReady(message));
+    }
   }
 
   fn prepare_window_resources(&mut self) {
@@ -77,7 +108,7 @@ impl Threaded for AssetManager {
       // process requests for assets.
       if let Some(message) = self.message_box.check_messages() {
         match message {
-          Message::RequestModel(path) => self.prepare_model(path),
+          Message::RequestAsset(path) => self.load_assets(path),
           Message::RequestWindowResources => self.prepare_window_resources(),
           _ => (),
         }
@@ -113,4 +144,40 @@ fn create_depth_images(allocator: &mut Allocator, count: u32) -> Result<Vec<Imag
   }
 
   Ok(images)
+}
+
+impl AssetGroup {
+  fn add_asset(&mut self, asset: AssetFile) -> Result<()> {
+    match asset.asset_type() {
+      ast::AssetType::Model => self.models.push(ast::Model::load_model(asset)?),
+      ast::AssetType::Scene => self.scenes.push(ast::Scene::load_scene(asset)?),
+    }
+
+    Ok(())
+  }
+
+  fn convert_models(&mut self, allocator: &mut Allocator) -> Result<Vec<Model>> {
+    self.models.drain(..).map(|model| Model::new(model, allocator)).collect::<Result<Vec<Model>>>()
+  }
+}
+
+fn parse_asset_file(path: &str) -> Result<AssetGroup> {
+  let mut asset_group = AssetGroup::default();
+  let path_buf = std::path::PathBuf::from(path);
+
+  match path_buf.extension().unwrap().to_str().unwrap() {
+    "ast" => {
+      let mut archive = ast::AssetArchiveReader::open(path)?;
+      let files: Vec<String> = archive.file_names().map(|file| file.to_owned()).collect();
+      for file in files {
+        let asset = archive.get_asset(&file)?;
+        asset_group.add_asset(asset)?;
+      }
+    }
+    _ => {
+      asset_group.add_asset(AssetFile::load_from_file(&path)?)?;
+    }
+  }
+
+  Ok(asset_group)
 }

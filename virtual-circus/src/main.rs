@@ -5,7 +5,7 @@ mod utils;
 mod vulkan;
 
 use message_bus::MessageBus;
-use systems::{AssetManager, Renderer, Systems};
+use systems::{AssetManager, Renderer, SceneManager, Systems};
 use utils::tools::Result;
 use vulkan::Vulkan;
 
@@ -45,6 +45,9 @@ fn run_systems() -> Result<()> {
 
   let renderer = Renderer::new(vulkan, message_bus.get_message_box())?;
   systems.add_system(renderer);
+
+  let scene_manager = SceneManager::new(message_bus.get_message_box());
+  systems.add_system(scene_manager);
 
   systems.add_system(message_bus);
   while !systems.all_systems_finished() {}
