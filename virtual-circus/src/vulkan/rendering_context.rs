@@ -1,211 +1,18 @@
-use crate::utils::constants::*;
-
 use super::descriptors::{DescriptorSet, DescriptorSets};
 use super::elements::PipelineLayout;
 use super::Device;
+use crate::framework::Model;
+use crate::utils::constants::*;
+use crate::utils::tools::Result;
 
 use ash::vk;
-use glam::*;
+use nalgebra_glm::*;
 use serde::Serialize;
-
-const ATTRIBUTE_COUNT: usize = 9;
-
-const POSITION_BINDING: u32 = 0;
-const NORMAL_BINDING: u32 = 1;
-const TANGENT_BINDING: u32 = 2;
-const TEXCOORD_BINDING: u32 = 3;
-const MATCOORD_BINDING: u32 = 4;
-const NORMCOORD_BINDING: u32 = 5;
-const OCCLISIONCOORD_BINDING: u32 = 6;
-const EMISSIONCOORD_BINDING: u32 = 7;
-const COLOR_BINDING: u32 = 8;
 
 #[derive(Serialize)]
 pub(crate) struct PushConstant {
   pub(crate) time: f32,
   pub(crate) matrix: Mat4,
-}
-
-pub(crate) enum AttributeType {
-  Position,
-  Normal,
-  Tangent,
-  Texcoord,
-  Matcoord,
-  Normcoord,
-  Occlusioncoord,
-  Emissivecoord,
-  Color,
-}
-
-impl AttributeType {
-  fn get_binding(&self) -> u32 {
-    match self {
-      AttributeType::Position => POSITION_BINDING,
-      AttributeType::Normal => NORMAL_BINDING,
-      AttributeType::Tangent => TANGENT_BINDING,
-      AttributeType::Texcoord => TEXCOORD_BINDING,
-      AttributeType::Matcoord => MATCOORD_BINDING,
-      AttributeType::Normcoord => NORMCOORD_BINDING,
-      AttributeType::Occlusioncoord => OCCLISIONCOORD_BINDING,
-      AttributeType::Emissivecoord => EMISSIONCOORD_BINDING,
-      AttributeType::Color => COLOR_BINDING,
-    }
-  }
-}
-
-pub(crate) struct Attribute {
-  pub(crate) buffer: vk::Buffer,
-  pub(crate) buffer_offset: vk::DeviceSize,
-  pub(crate) attribute_format: vk::Format,
-  pub(crate) attribute_offset: u32,
-  pub(crate) attribute_stride: u32,
-  pub(crate) count: u32,
-}
-
-impl Attribute {
-  fn get_binding_description(&self, binding: u32) -> vk::VertexInputBindingDescription2EXT {
-    vk::VertexInputBindingDescription2EXT {
-      binding,
-      stride: self.attribute_stride,
-      input_rate: vk::VertexInputRate::VERTEX,
-      divisor: 1,
-      ..Default::default()
-    }
-  }
-
-  fn get_attribute_description(&self, binding: u32) -> vk::VertexInputAttributeDescription2EXT {
-    vk::VertexInputAttributeDescription2EXT {
-      location: binding,
-      binding,
-      format: self.attribute_format,
-      offset: self.attribute_offset,
-      ..Default::default()
-    }
-  }
-}
-
-impl Default for Attribute {
-  fn default() -> Self {
-    Self {
-      buffer: vk::Buffer::null(),
-      buffer_offset: 0,
-      attribute_format: vk::Format::UNDEFINED,
-      attribute_offset: 0,
-      attribute_stride: 0,
-      count: 0,
-    }
-  }
-}
-
-pub(crate) struct VertexInfo {
-  buffers: [vk::Buffer; ATTRIBUTE_COUNT],
-  bindings: [vk::VertexInputBindingDescription2EXT; ATTRIBUTE_COUNT],
-  attributes: [vk::VertexInputAttributeDescription2EXT; ATTRIBUTE_COUNT],
-  offsets: [vk::DeviceSize; ATTRIBUTE_COUNT],
-  count: u32,
-}
-
-impl VertexInfo {
-  pub(crate) fn add_attribute(&mut self, attribute: Attribute, attribute_type: AttributeType) {
-    let binding = attribute_type.get_binding();
-    let index = binding as usize;
-
-    self.buffers[index] = attribute.buffer;
-    self.bindings[index] = attribute.get_binding_description(binding);
-    self.attributes[index] = attribute.get_attribute_description(binding);
-    self.offsets[index] = attribute.buffer_offset;
-    self.count = attribute.count;
-  }
-}
-
-impl Default for VertexInfo {
-  fn default() -> Self {
-    let position = Attribute {
-      attribute_format: vk::Format::R32G32B32_SFLOAT,
-      attribute_stride: std::mem::size_of::<glam::Vec3>() as u32,
-      ..Default::default()
-    };
-    let normal = Attribute {
-      attribute_format: vk::Format::R32G32B32_SFLOAT,
-      attribute_stride: std::mem::size_of::<glam::Vec3>() as u32,
-      ..Default::default()
-    };
-    let tangent = Attribute {
-      attribute_format: vk::Format::R32G32B32A32_SFLOAT,
-      attribute_stride: std::mem::size_of::<glam::Vec4>() as u32,
-      ..Default::default()
-    };
-    let texcoord = Attribute {
-      attribute_format: vk::Format::R32G32_SFLOAT,
-      attribute_stride: std::mem::size_of::<glam::Vec2>() as u32,
-      ..Default::default()
-    };
-    let matcoord = Attribute {
-      attribute_format: vk::Format::R32G32_SFLOAT,
-      attribute_stride: std::mem::size_of::<glam::Vec2>() as u32,
-      ..Default::default()
-    };
-    let normcoord = Attribute {
-      attribute_format: vk::Format::R32G32_SFLOAT,
-      attribute_stride: std::mem::size_of::<glam::Vec2>() as u32,
-      ..Default::default()
-    };
-    let occlusioncoord = Attribute {
-      attribute_format: vk::Format::R32G32_SFLOAT,
-      attribute_stride: std::mem::size_of::<glam::Vec2>() as u32,
-      ..Default::default()
-    };
-    let emissioncoord = Attribute {
-      attribute_format: vk::Format::R32G32_SFLOAT,
-      attribute_stride: std::mem::size_of::<glam::Vec2>() as u32,
-      ..Default::default()
-    };
-    let color = Attribute {
-      attribute_format: vk::Format::R32G32B32A32_SFLOAT,
-      attribute_stride: std::mem::size_of::<glam::Vec4>() as u32,
-      ..Default::default()
-    };
-
-    let buffers = [vk::Buffer::null(); ATTRIBUTE_COUNT];
-    let bindings = [vk::VertexInputBindingDescription2EXT::default(); ATTRIBUTE_COUNT];
-    let attributes = [vk::VertexInputAttributeDescription2EXT::default(); ATTRIBUTE_COUNT];
-    let offsets = [vk::DeviceSize::default(); ATTRIBUTE_COUNT];
-
-    let mut vertex_info = Self {
-      buffers,
-      bindings,
-      attributes,
-      offsets,
-      count: 0,
-    };
-
-    vertex_info.add_attribute(position, AttributeType::Position);
-    vertex_info.add_attribute(normal, AttributeType::Normal);
-    vertex_info.add_attribute(tangent, AttributeType::Tangent);
-    vertex_info.add_attribute(texcoord, AttributeType::Texcoord);
-    vertex_info.add_attribute(matcoord, AttributeType::Matcoord);
-    vertex_info.add_attribute(normcoord, AttributeType::Normcoord);
-    vertex_info.add_attribute(occlusioncoord, AttributeType::Occlusioncoord);
-    vertex_info.add_attribute(emissioncoord, AttributeType::Emissivecoord);
-    vertex_info.add_attribute(color, AttributeType::Color);
-
-    vertex_info
-  }
-}
-
-pub(crate) struct IndexInfo {
-  pub(crate) buffer: vk::Buffer,
-  pub(crate) count: u32,
-  pub(crate) offset: vk::DeviceSize,
-  pub(crate) index_type: vk::IndexType,
-}
-
-#[derive(Default)]
-pub(crate) struct MeshContext {
-  pub(crate) vertex_info: VertexInfo,
-  pub(crate) index_info: Option<IndexInfo>,
-  pub(crate) topology: vk::PrimitiveTopology,
 }
 
 pub(crate) struct RenderingContext<'a> {
@@ -229,17 +36,13 @@ impl<'a> RenderingContext<'a> {
     }
   }
 
-  pub(crate) fn draw_mesh(&self, mesh: MeshContext) {
+  pub(crate) fn draw_model(&self, model: &Model) {
     unsafe {
-      self.device.cmd_set_primitive_topology(*self.command_buffer, mesh.topology);
-      self.device.cmd_set_vertex_input(*self.command_buffer, &mesh.vertex_info.bindings, &mesh.vertex_info.attributes);
-      self.device.cmd_bind_vertex_buffers(*self.command_buffer, 0, &mesh.vertex_info.buffers, &mesh.vertex_info.offsets);
+      for mesh in &model.meshes {
+        self.device.cmd_bind_vertex_buffers(*self.command_buffer, 0, &[*model.buffer], &[mesh.vertex_offset as u64]);
 
-      if let Some(index_info) = mesh.index_info {
-        self.device.cmd_bind_index_buffer(*self.command_buffer, index_info.buffer, index_info.offset, index_info.index_type);
-        self.device.cmd_draw_indexed(*self.command_buffer, index_info.count, 1, 0, 0, 0);
-      } else {
-        self.device.cmd_draw(*self.command_buffer, mesh.vertex_info.count, 1, 0, 0);
+        self.device.cmd_bind_index_buffer(*self.command_buffer, *model.buffer, mesh.index_offset as u64, vk::IndexType::UINT32);
+        self.device.cmd_draw_indexed(*self.command_buffer, mesh.index_count, 1, 0, 0, 0);
       }
     }
   }
@@ -307,5 +110,17 @@ impl<'a> RenderingContext<'a> {
         &[offset],
       )
     }
+  }
+
+  pub(crate) fn complete_rendering_command(&mut self) {
+    unsafe { self.device.cmd_end_rendering(*self.command_buffer) };
+  }
+
+  pub(crate) fn end_command_buffer(&mut self) -> Result<()> {
+    unsafe { Ok(self.device.end_command_buffer(*self.command_buffer)?) }
+  }
+
+  pub(crate) fn command_buffer(&self) -> &vk::CommandBuffer {
+    self.command_buffer
   }
 }

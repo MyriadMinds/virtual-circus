@@ -4,12 +4,12 @@
 layout(location = 0) in vec3 pos;
 layout(location = 1) in vec3 normal;
 layout(location = 2) in vec4 tangent;
-layout(location = 3) in vec2 texcoord;
-layout(location = 4) in vec2 matcoord;
-layout(location = 5) in vec2 normcoord;
-layout(location = 6) in vec2 occlusioncoord;
-layout(location = 7) in vec2 emissivecoord;
-layout(location = 8) in vec4 color;
+// layout(location = 3) in vec2 texcoord;
+// layout(location = 4) in vec2 matcoord;
+// layout(location = 5) in vec2 normcoord;
+// layout(location = 6) in vec2 occlusioncoord;
+// layout(location = 7) in vec2 emissivecoord;
+// layout(location = 8) in vec4 color;
 
 layout(set = 0, binding = 0) uniform UniformBufferObject 
 {
@@ -26,7 +26,7 @@ layout( push_constant ) uniform constants
 
 layout(location = 0) out float light_intensity;
 layout(location = 1) out vec4 frag_color;
-layout(location = 2) out vec2 frag_texcoord;
+// layout(location = 2) out vec2 frag_texcoord;
 
 vec4 quaternionFromEuler(vec3 euler)
 {
@@ -90,6 +90,7 @@ void main() {
 
     gl_Position = ubo.proj * model_location  * vec4(pos, 1.0);
     light_intensity = lightIntensity;
-    frag_color = color;
-    frag_texcoord = texcoord;
+    frag_color = vec4(1.0, 1.0, 1.0, 1.0);
+    // frag_color = color;
+    // frag_texcoord = texcoord;
 }

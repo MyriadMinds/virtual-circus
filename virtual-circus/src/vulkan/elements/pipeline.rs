@@ -14,7 +14,7 @@ pub(crate) struct Pipeline {
 }
 
 impl Pipeline {
-  pub(crate) fn new(device: &Arc<Device>, pipeline_layout: &vk::PipelineLayout, color_format: &vk::Format) -> Result<Self> {
+  pub(crate) fn new(device: &Arc<Device>, pipeline_layout: &vk::PipelineLayout) -> Result<Self> {
     debug!("Creating graphics pipeline.");
     let vertex_shader = unsafe { read_shader("shaders/vertexShader.vert.spv", device)? };
     let fragment_shader = unsafe { read_shader("shaders/fragmentShader.frag.spv", device)? };
@@ -37,18 +37,48 @@ impl Pipeline {
 
     let shader_stages = [vertex_shader_stage_info, fragment_shader_stage_info];
 
+    let vertex_binding_desciptions = [vk::VertexInputBindingDescription {
+      binding: 0,
+      stride: 40,
+      input_rate: vk::VertexInputRate::VERTEX,
+    }];
+
+    let vertex_attribute_descriptions = [
+      vk::VertexInputAttributeDescription {
+        location: 0,
+        binding: 0,
+        format: vk::Format::R32G32B32_SFLOAT,
+        offset: 0,
+      },
+      vk::VertexInputAttributeDescription {
+        location: 1,
+        binding: 0,
+        format: vk::Format::R32G32B32_SFLOAT,
+        offset: 12,
+      },
+      vk::VertexInputAttributeDescription {
+        location: 2,
+        binding: 0,
+        format: vk::Format::R32G32B32A32_SFLOAT,
+        offset: 24,
+      },
+    ];
+
+    let vertex_input_state = vk::PipelineVertexInputStateCreateInfo {
+      vertex_binding_description_count: vertex_binding_desciptions.len() as u32,
+      p_vertex_binding_descriptions: vertex_binding_desciptions.as_ptr(),
+      vertex_attribute_description_count: vertex_attribute_descriptions.len() as u32,
+      p_vertex_attribute_descriptions: vertex_attribute_descriptions.as_ptr(),
+      ..Default::default()
+    };
+
     let input_assembly = vk::PipelineInputAssemblyStateCreateInfo {
       primitive_restart_enable: vk::FALSE,
       topology: vk::PrimitiveTopology::TRIANGLE_LIST,
       ..Default::default()
     };
 
-    let dynamic_states = [
-      vk::DynamicState::VIEWPORT,
-      vk::DynamicState::SCISSOR,
-      vk::DynamicState::PRIMITIVE_TOPOLOGY,
-      vk::DynamicState::VERTEX_INPUT_EXT,
-    ];
+    let dynamic_states = [vk::DynamicState::VIEWPORT, vk::DynamicState::SCISSOR];
     let pipeline_dynamic_state = vk::PipelineDynamicStateCreateInfo {
       dynamic_state_count: dynamic_states.len() as u32,
       p_dynamic_states: dynamic_states.as_ptr(),
@@ -108,7 +138,7 @@ impl Pipeline {
 
     let mut rendering_info = vk::PipelineRenderingCreateInfo {
       color_attachment_count: 1,
-      p_color_attachment_formats: color_format,
+      p_color_attachment_formats: [vk::Format::R8G8B8A8_SRGB].as_ptr(),
       depth_attachment_format: DEPTH_FORMAT,
       stencil_attachment_format: vk::Format::UNDEFINED,
       ..Default::default()
@@ -118,6 +148,7 @@ impl Pipeline {
       .flags(vk::PipelineCreateFlags::DESCRIPTOR_BUFFER_EXT)
       .depth_stencil_state(&depth_stencil_state)
       .dynamic_state(&pipeline_dynamic_state)
+      .vertex_input_state(&vertex_input_state)
       .input_assembly_state(&input_assembly)
       .viewport_state(&view_port_state)
       .rasterization_state(&rasterizer)

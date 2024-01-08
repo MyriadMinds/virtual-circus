@@ -7,7 +7,7 @@ use crate::utils::tools::Result;
 
 use ash::vk;
 use bitmask_enum::bitmask;
-use glam::*;
+use nalgebra_glm::*;
 use serde::Serialize;
 
 use std::ops::Index;
@@ -30,7 +30,7 @@ pub(crate) enum MaterialFlags {
 #[repr(C)]
 pub(crate) struct MaterialInfo {
   pub(crate) base_color_factor: Vec4,
-  pub(crate) emissive_factor: Vec3A,
+  pub(crate) emissive_factor: Vec3,
   pub(crate) metallic_roughness_factor: Vec2,
   pub(crate) normals_scale_factor: f32,
   pub(crate) occlusion_strength_factor: f32,

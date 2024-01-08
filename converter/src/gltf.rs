@@ -261,14 +261,14 @@ impl GLTFConverter {
       let model_name = self.models.get(mesh.index()).ok_or(ConverterError::MissingResource)?.name.clone();
       let model_id = self.models.get(mesh.index()).ok_or(ConverterError::MissingResource)?.id.clone();
       let index = scene.insert_model(model_id);
-      parsed_node.model = index;
+      parsed_node.model = Some(index);
       parsed_node.name = model_name;
     };
 
     for node in children {
       let node = self.parse_node(scene, &node)?;
       let index = scene.insert_node(node);
-      parsed_node.childrem.push(index);
+      parsed_node.children.push(index);
     }
 
     Ok(parsed_node)
@@ -278,7 +278,7 @@ impl GLTFConverter {
     let output_dir = self.output_dir;
     let file_name = self.file_name;
     let archive_name = format!("{output_dir}/{file_name}.ast");
-    let mut archive = match ast::AssetArchiveWriter::new(&archive_name) {
+    let mut archive = match ast::AssetArchive::new(&archive_name) {
       Ok(archive) => {
         info!("Created asset archive: {}", archive_name);
         archive
@@ -309,7 +309,7 @@ impl GLTFConverter {
 
 //----------------------------Helpers--------------------------------------
 
-fn save_asset(asset: impl ast::Asset, asset_name: &str, archive: &mut ast::AssetArchiveWriter) {
+fn save_asset(asset: impl ast::Asset, asset_name: &str, archive: &mut ast::AssetArchive) {
   let asset = match asset.convert_to_asset() {
     Ok(asset) => asset,
     Err(e) => {

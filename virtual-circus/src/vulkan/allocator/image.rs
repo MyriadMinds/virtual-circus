@@ -15,6 +15,7 @@ use std::sync::Arc;
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum ImagePurpose {
   Texture,
+  ColorAttachment,
   DepthBuffer,
 }
 
@@ -22,6 +23,7 @@ impl ImagePurpose {
   pub(super) fn aspect_mask(&self) -> vk::ImageAspectFlags {
     match self {
       ImagePurpose::Texture => vk::ImageAspectFlags::COLOR,
+      ImagePurpose::ColorAttachment => vk::ImageAspectFlags::COLOR,
       ImagePurpose::DepthBuffer => vk::ImageAspectFlags::DEPTH,
     }
   }
@@ -115,19 +117,11 @@ impl Image {
   }
 
   pub(super) fn transition_image(&mut self, command_buffer: &vk::CommandBuffer, purpose: ImagePurpose) {
-    let new_layout;
-    let aspect_mask;
-
-    match purpose {
-      ImagePurpose::Texture => {
-        new_layout = vk::ImageLayout::SHADER_READ_ONLY_OPTIMAL;
-        aspect_mask = vk::ImageAspectFlags::COLOR;
-      }
-      ImagePurpose::DepthBuffer => {
-        new_layout = vk::ImageLayout::DEPTH_ATTACHMENT_OPTIMAL;
-        aspect_mask = vk::ImageAspectFlags::DEPTH;
-      }
-    }
+    let new_layout = match purpose {
+      ImagePurpose::Texture => vk::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
+      ImagePurpose::ColorAttachment => vk::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
+      ImagePurpose::DepthBuffer => vk::ImageLayout::DEPTH_ATTACHMENT_OPTIMAL,
+    };
 
     let image_barrier = vk::ImageMemoryBarrier {
       src_access_mask: vk::AccessFlags::TRANSFER_WRITE,
@@ -138,7 +132,7 @@ impl Image {
       dst_queue_family_index: vk::QUEUE_FAMILY_IGNORED,
       image: self.image,
       subresource_range: vk::ImageSubresourceRange {
-        aspect_mask,
+        aspect_mask: purpose.aspect_mask(),
         base_mip_level: 0,
         level_count: 1,
         base_array_layer: 0,

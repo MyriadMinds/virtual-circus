@@ -181,6 +181,7 @@ impl Allocator {
     use ImagePurpose as IP;
     match purpose {
       IP::Texture => self.fill_image(data, &final_image, image_info.extent)?,
+      IP::ColorAttachment => (),
       IP::DepthBuffer => (),
     };
 

@@ -80,11 +80,32 @@ impl AssetManager {
       return;
     };
 
-    let Ok(depth_images) = create_depth_images(&mut self.allocator, 10) else {
+    let Ok(depth_images) = create_window_images(
+      &mut self.allocator,
+      MAX_FRAMES_IN_FLIGHT,
+      DEPTH_FORMAT,
+      vk::ImageUsageFlags::DEPTH_STENCIL_ATTACHMENT,
+      ImagePurpose::DepthBuffer,
+    ) else {
       error!("Failed to create depth images for window request");
       return;
     };
-    let resources = WindowResources { depth_images, global_descriptor_sets };
+
+    let Ok(color_images) = create_window_images(
+      &mut self.allocator,
+      MAX_FRAMES_IN_FLIGHT,
+      vk::Format::R8G8B8A8_SRGB,
+      vk::ImageUsageFlags::COLOR_ATTACHMENT | vk::ImageUsageFlags::TRANSFER_SRC,
+      ImagePurpose::ColorAttachment,
+    ) else {
+      error!("Failed to create color images for window request");
+      return;
+    };
+    let resources = WindowResources {
+      depth_images,
+      color_images,
+      global_descriptor_sets,
+    };
     let resources = MessageData::new(resources);
 
     self.allocator.flush();
@@ -123,13 +144,13 @@ impl Threaded for AssetManager {
   }
 }
 
-fn create_depth_images(allocator: &mut Allocator, count: u32) -> Result<Vec<Image>> {
+fn create_window_images(allocator: &mut Allocator, count: u32, format: vk::Format, usage: vk::ImageUsageFlags, purpose: ImagePurpose) -> Result<Vec<Image>> {
   let extent = vk::Extent3D { width: 3840, height: 2160, depth: 1 };
 
   let image_create_info = vk::ImageCreateInfo {
-    format: DEPTH_FORMAT,
+    format,
     tiling: vk::ImageTiling::OPTIMAL,
-    usage: vk::ImageUsageFlags::DEPTH_STENCIL_ATTACHMENT,
+    usage,
     image_type: vk::ImageType::TYPE_2D,
     samples: vk::SampleCountFlags::TYPE_1,
     mip_levels: 1,
@@ -140,7 +161,7 @@ fn create_depth_images(allocator: &mut Allocator, count: u32) -> Result<Vec<Imag
 
   let mut images = Vec::with_capacity(count as usize);
   for _ in 0..count {
-    images.push(allocator.create_image(&[], image_create_info, ImagePurpose::DepthBuffer)?);
+    images.push(allocator.create_image(&[], image_create_info, purpose)?);
   }
 
   Ok(images)
@@ -167,10 +188,9 @@ fn parse_asset_file(path: &str) -> Result<AssetGroup> {
 
   match path_buf.extension().unwrap().to_str().unwrap() {
     "ast" => {
-      let mut archive = ast::AssetArchiveReader::open(path)?;
-      let files: Vec<String> = archive.file_names().map(|file| file.to_owned()).collect();
-      for file in files {
-        let asset = archive.get_asset(&file)?;
+      let assets = ast::AssetArchive::get_assets(path)?;
+
+      for asset in assets {
         asset_group.add_asset(asset)?;
       }
     }

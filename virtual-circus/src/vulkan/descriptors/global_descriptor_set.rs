@@ -5,8 +5,8 @@ use crate::utils::constants::GLOBAL_DESCRIPTOR_BINDING;
 use crate::utils::tools::Result;
 
 use ash::vk;
-use glam::*;
 use log::debug;
+use nalgebra_glm::*;
 use serde::Serialize;
 
 use std::mem::size_of;

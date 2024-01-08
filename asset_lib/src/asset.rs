@@ -62,11 +62,11 @@ impl AssetFile {
   }
 }
 
-pub struct AssetArchiveWriter {
+pub struct AssetArchive {
   zip_writer: zip::ZipWriter<File>,
 }
 
-impl AssetArchiveWriter {
+impl AssetArchive {
   pub fn new(path: &str) -> Result<Self> {
     let file = File::create(path)?;
     let zip_writer = zip::ZipWriter::new(file);
@@ -85,27 +85,19 @@ impl AssetArchiveWriter {
     self.zip_writer.finish()?;
     Ok(())
   }
-}
 
-pub struct AssetArchiveReader {
-  zip_reader: zip::ZipArchive<File>,
-}
-
-impl AssetArchiveReader {
-  pub fn open(path: &str) -> Result<Self> {
+  pub fn get_assets(path: &str) -> Result<Vec<AssetFile>> {
     let file = File::open(path)?;
-    let zip_reader = zip::ZipArchive::new(file)?;
+    let mut zip_reader = zip::ZipArchive::new(file)?;
+    let names = zip_reader.file_names().map(|name| name.to_owned()).collect::<Vec<String>>();
+    let mut assets = Vec::new();
 
-    Ok(Self { zip_reader })
-  }
+    for name in names {
+      let asset = zip_reader.by_name(&name)?;
+      let asset = AssetFile::read_from_reader(asset)?;
+      assets.push(asset);
+    }
 
-  pub fn file_names(&self) -> impl Iterator<Item = &str> {
-    self.zip_reader.file_names()
-  }
-
-  pub fn get_asset(&mut self, name: &str) -> Result<AssetFile> {
-    let asset = self.zip_reader.by_name(name)?;
-    let asset = AssetFile::read_from_reader(asset)?;
-    Ok(asset)
+    Ok(assets)
   }
 }

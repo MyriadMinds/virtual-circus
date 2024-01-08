@@ -53,3 +53,8 @@ fn run_systems() -> Result<()> {
   while !systems.all_systems_finished() {}
   Ok(())
 }
+
+// todo: Better logging config
+// todo: rename the tools file
+// todo: use timeline semaphores during rendering
+// change vertex buffer offsets to u64

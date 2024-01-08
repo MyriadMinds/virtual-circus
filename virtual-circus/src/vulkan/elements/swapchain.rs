@@ -44,7 +44,7 @@ impl Swapchain {
       image_color_space: format.color_space,
       image_array_layers: 1,
       image_sharing_mode: ash::vk::SharingMode::EXCLUSIVE,
-      image_usage: ash::vk::ImageUsageFlags::COLOR_ATTACHMENT,
+      image_usage: ash::vk::ImageUsageFlags::TRANSFER_DST,
       composite_alpha: ash::vk::CompositeAlphaFlagsKHR::OPAQUE,
       clipped: ash::vk::TRUE,
       ..Default::default()

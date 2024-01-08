@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 const SCENE_VERSION: u32 = 1;
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Clone)]
 pub struct Scene {
   pub name: String,
   models: Vec<u128>,
@@ -13,12 +13,12 @@ pub struct Scene {
   parent_nodes: Vec<usize>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Clone)]
 pub struct Node {
   pub name: String,
   pub transform: glm::Mat4,
-  pub childrem: Vec<usize>,
-  pub model: usize,
+  pub children: Vec<usize>,
+  pub model: Option<usize>,
 }
 
 impl Scene {

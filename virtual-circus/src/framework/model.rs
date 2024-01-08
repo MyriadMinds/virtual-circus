@@ -1,16 +1,15 @@
 use crate::utils::tools::Result;
 use crate::vulkan::allocator::{Buffer, BufferType};
-use crate::vulkan::rendering_context::RenderingContext;
 use crate::vulkan::Allocator;
 
 use ash::vk;
 use asset_lib as ast;
 
 pub(crate) struct Model {
-  name: String,
-  id: u128,
-  meshes: Vec<ast::Mesh>,
-  buffer: Buffer,
+  pub(crate) name: String,
+  pub(crate) id: u128,
+  pub(crate) meshes: Vec<ast::Mesh>,
+  pub(crate) buffer: Buffer,
 }
 
 impl Model {
@@ -25,8 +24,6 @@ impl Model {
       buffer,
     })
   }
-
-  pub(crate) fn draw(&self, rendering_context: &mut RenderingContext) {}
 }
 
 // pub(crate) trait ModelRequest {

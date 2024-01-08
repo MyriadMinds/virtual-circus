@@ -12,6 +12,7 @@ pub(crate) enum Message {
   WindowResourcesReady(MessageData<WindowResources>),
   ModelReady(MessageData<Model>),
   SceneReady(MessageData<asset_lib::Scene>),
+  CurrentScene(MessageData<asset_lib::Scene>),
 }
 
 impl Message {
@@ -23,6 +24,7 @@ impl Message {
       Message::WindowResourcesReady(_) => debug!("Message: WindowResourcesReady"),
       Message::ModelReady(_) => debug!("Message: ModelReady"),
       Message::SceneReady(_) => debug!("Message: SceneReady"),
+      Message::CurrentScene(_) => debug!("Message: CurrentScene"),
     }
   }
 }
