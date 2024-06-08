@@ -482,7 +482,7 @@ fn create_fences(device: &Arc<Device>, count: usize) -> Result<Vec<Fence>> {
 
 fn create_global_descriptor_set_info(swapchain_extent: &vk::Extent2D) -> GlobalDescriptorSetInfo {
   let camera_pos = glm::Vec3::new(1.0, 1.0, 1.5);
-  let center_pos = glm::Vec3::new(-1.0, -1.0, -0.5);
+  let center_pos = glm::Vec3::new(-2.0, -2.0, 0.0);
   let up_direction = glm::Vec3::new(0.0, 0.0, -1.0);
   let view = glm::look_at(&camera_pos, &center_pos, &up_direction);
 

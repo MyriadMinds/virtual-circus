@@ -85,7 +85,7 @@ impl GLTFConverter {
 
     for primitive in mesh.primitives() {
       let (vertices, indices) = self.parse_primitive(&primitive)?;
-      model.add_mesh(vertices, indices)?;
+      model.add_mesh(&vertices, &indices)?;
     }
 
     model.id = hash_model(&model);
@@ -209,11 +209,12 @@ impl GLTFConverter {
       }
     }
 
-    // if accessor.normalized() {
-    //   for mut element in base_components.iter_mut() {
-    //     renormalize(&mut element, &data_type);
-    //   }
-    // }
+    if accessor.normalized() {
+      todo!();
+      // for mut element in base_components.iter_mut() {
+      //   renormalize(&mut element, &data_type);
+      // }
+    }
 
     Ok(base_components)
   }

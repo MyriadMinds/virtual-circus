@@ -1,3 +1,8 @@
 [workspace]
 resolver = "2"
 members = ["virtual-circus", "asset_lib", "converter"]
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]

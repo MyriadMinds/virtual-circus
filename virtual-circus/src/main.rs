@@ -56,5 +56,4 @@ fn run_systems() -> Result<()> {
 
 // todo: Better logging config
 // todo: rename the tools file
-// todo: use timeline semaphores during rendering
 // change vertex buffer offsets to u64

@@ -41,16 +41,16 @@ impl Model {
     Ok(model)
   }
 
-  pub fn add_mesh(&mut self, vertices: Vec<Vertex>, indices: Vec<u32>) -> Result<()> {
+  pub fn add_mesh(&mut self, vertices: &[Vertex], indices: &[u32]) -> Result<()> {
     let vertex_count = vertices.len() as u32;
     let vertex_offset = self.blob.len() as u32;
     let mut vertex_data = bincode::serialize(&vertices)?;
-    self.blob.append(&mut vertex_data);
+    self.blob.extend_from_slice(&mut vertex_data[8..]);
 
     let index_count = indices.len() as u32;
     let index_offset = self.blob.len() as u32;
     let mut index_data = bincode::serialize(&indices)?;
-    self.blob.append(&mut index_data);
+    self.blob.extend_from_slice(&mut index_data[8..]);
 
     let mesh = Mesh {
       vertex_count,

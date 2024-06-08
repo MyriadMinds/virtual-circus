@@ -1,5 +1,6 @@
 mod error;
 mod gltf;
+mod pipeline;
 
 pub(crate) use error::{ConverterError, Result};
 
@@ -100,6 +101,10 @@ fn convert_file(src_file: &PathBuf, output_dir: &PathBuf) {
     "gltf" | "glb" | "vrm" => {
       info!("Parsing gltf file {}", src_file);
       gltf::GLTFConverter::parse_file(src_file, output_dir);
+    }
+    "pipmf" => {
+      info!("Parsing pipline manifest {}", src_file);
+      pipeline::PipelineConverter::parse_file(src_file, output_dir);
     }
     _ => error!("file {} has an unknown format, skipping...", src_file),
   }

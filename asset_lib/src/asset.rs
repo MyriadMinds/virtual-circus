@@ -12,6 +12,7 @@ pub trait Asset {
 pub enum AssetType {
   Model = 1,
   Scene = 2,
+  Pipeline = 3,
 }
 
 impl AssetType {
@@ -19,6 +20,7 @@ impl AssetType {
     match self {
       AssetType::Model => "Model",
       AssetType::Scene => "Scene",
+      AssetType::Pipeline => "Pipeline",
     }
   }
 }

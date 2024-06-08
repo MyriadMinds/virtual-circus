@@ -100,8 +100,9 @@ impl Threaded for Renderer {
       };
 
       if let Some(scene) = &self.scene {
-        let node = scene.parent_nodes()[0];
-        self.draw_node(glm::Mat4::identity(), &scene.nodes()[node], &rendering_context);
+        for node in scene.parent_nodes() {
+          self.draw_node(glm::Mat4::identity(), &scene.nodes()[*node], &rendering_context);
+        }
       }
 
       match window.draw_frame(rendering_context) {

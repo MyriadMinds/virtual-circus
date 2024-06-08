@@ -1,0 +1,5 @@
+name: "VTC_default"
+blending:
+  test: true
+vertex_shader: "./vertexShader.vert"
+fragment_shader: "./fragmentShader.frag"
